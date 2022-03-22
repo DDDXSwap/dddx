@@ -44,7 +44,7 @@ contract BaseV1Minter {
     voter public immutable _voter;
     ve public immutable _ve;
     ve_dist public immutable _ve_dist;
-    uint public weekly = 20000000e18;
+    uint public weekly = 2900000e18;
     uint public active_period;
     uint internal constant lock = 86400 * 7 * 52 * 4;
 
