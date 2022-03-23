@@ -339,7 +339,9 @@ contract Gauge {
     }
 
     function withdrawReward(address account, address token) internal {
+        _unlocked = 1;
         Voter(voter).distribute(address(this));
+        _unlocked = 2;
 
         (rewardPerTokenStored[token], lastUpdateTime[token]) = _updateRewardPerToken(token);
         uint _reward = earned(token, account);
