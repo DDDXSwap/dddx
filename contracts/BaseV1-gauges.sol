@@ -338,6 +338,17 @@ contract Gauge {
         _writeSupplyCheckpoint();
     }
 
+    function withdrawReward(address account, address token) internal {
+        Voter(voter).distribute(address(this));
+
+        (rewardPerTokenStored[token], lastUpdateTime[token]) = _updateRewardPerToken(token);
+        uint _reward = earned(token, account);
+        lastEarn[token][account] = block.timestamp;
+        userRewardPerTokenStored[token][account] = rewardPerTokenStored[token];
+        if (_reward > 0) _safeTransfer(token, account, _reward);
+
+        emit ClaimRewards(msg.sender, token, _reward);
+    }
 
     function rewardPerToken(address token) public view returns (uint) {
         if (derivedSupply == 0) {
@@ -513,6 +524,12 @@ contract Gauge {
     }
 
     function withdrawToken(uint amount, uint tokenId) public lock {
+
+        address rewardToken = ve(_ve).token();
+        if (isReward[rewardToken]){
+            withdrawReward(msg.sender, rewardToken);
+        }
+
         totalSupply -= amount;
         balanceOf[msg.sender] -= amount;
         _safeTransfer(stake, msg.sender, amount);
