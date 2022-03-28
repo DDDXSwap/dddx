@@ -111,10 +111,13 @@ contract BaseV1Minter {
         if (block.timestamp >= _period + week && initializer == address(0)) { // only trigger if new week
             _period = block.timestamp / week * week;
             active_period = _period;
-            weekly = weekly_emission();
+            if(calculate_emission() > circulating_emission()){ // Inflation is falling by 2 per cent at a time
+                weekly = weekly * emission / target_base;
+            }
+            uint256 weeklyEmission = weekly_emission();
 
-            uint _growth = calculate_growth(weekly);
-            uint _required = _growth + weekly;
+            uint _growth = calculate_growth(weeklyEmission);
+            uint _required = _growth + weeklyEmission;
             uint _balanceOf = _token.balanceOf(address(this));
             if (_balanceOf < _required) {
                 _token.mint(address(this), _required-_balanceOf);
@@ -124,10 +127,10 @@ contract BaseV1Minter {
             _ve_dist.checkpoint_token(); // checkpoint token balance that was just minted in ve_dist
             _ve_dist.checkpoint_total_supply(); // checkpoint supply
 
-            _token.approve(address(_voter), weekly);
-            _voter.notifyRewardAmount(weekly);
+            _token.approve(address(_voter), weeklyEmission);
+            _voter.notifyRewardAmount(weeklyEmission);
 
-            emit Mint(msg.sender, weekly, circulating_supply(), circulating_emission());
+            emit Mint(msg.sender, weeklyEmission, circulating_supply(), circulating_emission());
         }
         return _period;
     }
