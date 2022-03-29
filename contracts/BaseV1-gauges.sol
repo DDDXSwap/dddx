@@ -23,7 +23,7 @@ interface ve {
     function balanceOfNFT(uint) external view returns (uint);
     function isApprovedOrOwner(address, uint) external view returns (bool);
     function ownerOf(uint) external view returns (address);
-    function transferFrom(address, address, uint) external;
+    function transferFrom(address, address, uint) external returns (bool);
 }
 
 interface IBaseV1Factory {

@@ -20,7 +20,7 @@ interface ve {
     function balanceOfNFT(uint) external view returns (uint);
     function isApprovedOrOwner(address, uint) external view returns (bool);
     function ownerOf(uint) external view returns (address);
-    function transferFrom(address, address, uint) external;
+    function transferFrom(address, address, uint) external returns (bool);
     function attach(uint tokenId) external;
     function detach(uint tokenId) external;
     function voting(uint tokenId) external;
@@ -217,7 +217,7 @@ contract BaseV1Voter {
         _vote(tokenId, _poolVote, _weights);
     }
 
-    function whitelist(address _token, uint _tokenId) public {
+    function whitelist(address _token, uint _tokenId) external {
         if (_tokenId > 0) {
             require(msg.sender == ve(_ve).ownerOf(_tokenId));
             require(ve(_ve).balanceOfNFT(_tokenId) > listing_fee());

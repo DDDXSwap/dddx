@@ -54,7 +54,7 @@ contract ve_dist {
 
     uint constant WEEK = 7 * 86400;
 
-    uint public start_time;
+    uint public immutable start_time;
     uint public time_cursor;
     mapping(uint => uint) public time_cursor_of;
     mapping(uint => uint) public user_epoch_of;
@@ -62,8 +62,8 @@ contract ve_dist {
     uint public last_token_time;
     uint[1000000000000000] public tokens_per_week;
 
-    address public voting_escrow;
-    address public token;
+    address public immutable voting_escrow;
+    address public immutable token;
     uint public token_last_balance;
 
     uint[1000000000000000] public ve_supply;

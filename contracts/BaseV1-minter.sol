@@ -11,7 +11,7 @@ interface ve {
     function token() external view returns (address);
     function totalSupply() external view returns (uint);
     function create_lock_for(uint, uint, address) external returns (uint);
-    function transferFrom(address, address, uint) external;
+    function transferFrom(address, address, uint) external returns (bool);
 }
 
 interface underlying {
@@ -85,7 +85,7 @@ contract BaseV1Minter {
         return _token.totalSupply() - _ve.totalSupply();
     }
 
-    // emission calculation is 2% of available supply to mint adjusted by circulating / total supply
+    // circulating_supply multiplied by weekly issuance of 98%
     function calculate_emission() public view returns (uint) {
         return weekly * emission * circulating_supply() / target_base / _token.totalSupply();
     }
