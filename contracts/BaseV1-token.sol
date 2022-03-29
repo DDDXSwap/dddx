@@ -18,7 +18,7 @@ contract BaseV1 {
 
     constructor() {
         minter = msg.sender;
-        _mint(msg.sender, 100000e18);
+        _mint(msg.sender, 600000e18);
     }
 
     // No checks as its meant to be once off to set minting rights to BaseV1 Minter
