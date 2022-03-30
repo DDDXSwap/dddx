@@ -327,6 +327,11 @@ contract ve is IERC721, IERC721Metadata {
     );
     event Withdraw(address indexed provider, uint tokenId, uint value, uint ts);
     event Supply(uint prevSupply, uint supply);
+    event SetVoter(address indexed voter);
+    event Voting(uint tokenId);
+    event Abstain(uint tokenId);
+    event Attach(uint tokenId);
+    event Detach(uint tokenId);
 
     uint internal constant WEEK = 1 weeks;
     uint internal constant MAXTIME = 4 * 365 * 86400;
@@ -924,26 +929,31 @@ contract ve is IERC721, IERC721Metadata {
     function setVoter(address _voter) external {
         require(msg.sender == voter);
         voter = _voter;
+        emit SetVoter(voter);
     }
 
     function voting(uint _tokenId) external {
         require(msg.sender == voter);
         voted[_tokenId] = true;
+        emit Voting(_tokenId);
     }
 
     function abstain(uint _tokenId) external {
         require(msg.sender == voter);
         voted[_tokenId] = false;
+        emit Abstain(_tokenId);
     }
 
     function attach(uint _tokenId) external {
         require(msg.sender == voter);
         attachments[_tokenId] = attachments[_tokenId]+1;
+        emit Attach(_tokenId);
     }
 
     function detach(uint _tokenId) external {
         require(msg.sender == voter);
         attachments[_tokenId] = attachments[_tokenId]-1;
+        emit Detach(_tokenId);
     }
 
     function merge(uint _from, uint _to) external {

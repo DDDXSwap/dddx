@@ -51,6 +51,7 @@ contract BaseV1Minter {
     address internal initializer;
 
     event Mint(address indexed sender, uint weekly, uint circulating_supply, uint circulating_emission);
+    event Initialize(address indexed initializer, uint active_period);
 
     constructor(
         address __voter, // the voting & distribution system
@@ -78,6 +79,8 @@ contract BaseV1Minter {
         }
         initializer = address(0);
         active_period = (block.timestamp + week) / week * week;
+
+        emit Initialize(initializer, active_period);
     }
 
     // calculate circulating supply as total token supply - locked supply

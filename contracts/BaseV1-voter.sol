@@ -94,6 +94,7 @@ contract BaseV1Voter {
     event Attach(address indexed owner, address indexed gauge, uint tokenId);
     event Detach(address indexed owner, address indexed gauge, uint tokenId);
     event Whitelisted(address indexed whitelister, address indexed token);
+    event Initialize(address indexed minter);
 
     constructor(address __ve, address _factory, address  _gauges, address _bribes) {
         _ve = __ve;
@@ -119,6 +120,7 @@ contract BaseV1Voter {
             _whitelist(_tokens[i]);
         }
         minter = _minter;
+        emit Initialize(minter);
     }
 
     function listing_fee() public view returns (uint) {

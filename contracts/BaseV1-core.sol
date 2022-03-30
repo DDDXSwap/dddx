@@ -624,6 +624,8 @@ contract BaseV1Factory {
     bool internal _temp;
 
     event PairCreated(address indexed token0, address indexed token1, bool stable, address pair, uint);
+    event SetPauser(address indexed pendingPauser);
+    event AcceptPauser(address indexed pauser);
 
     constructor() {
         pauser = msg.sender;
@@ -637,11 +639,13 @@ contract BaseV1Factory {
     function setPauser(address _pauser) external {
         require(msg.sender == pauser);
         pendingPauser = _pauser;
+        emit SetPauser(pendingPauser);
     }
 
     function acceptPauser() external {
         require(msg.sender == pendingPauser);
         pauser = pendingPauser;
+        emit AcceptPauser(pauser);
     }
 
     function setPause(bool _state) external {

@@ -52,6 +52,10 @@ contract ve_dist {
         uint max_epoch
     );
 
+    event SetDepositor(
+        address indexed depositor
+    );
+
     uint constant WEEK = 7 * 86400;
 
     uint public immutable start_time;
@@ -343,5 +347,6 @@ contract ve_dist {
     function setDepositor(address _depositor) external {
         require(msg.sender == depositor);
         depositor = _depositor;
+        emit SetDepositor(depositor);
     }
 }
