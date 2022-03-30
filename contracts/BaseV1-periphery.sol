@@ -207,8 +207,8 @@ contract BaseV1Router01 {
         uint amountAMin,
         uint amountBMin
     ) internal returns (uint amountA, uint amountB) {
-        require(amountADesired >= amountAMin);
-        require(amountBDesired >= amountBMin);
+        require(amountADesired >= amountAMin, 'amountADesired < amountAMin');
+        require(amountBDesired >= amountBMin, 'amountBDesired < amountBMin');
         // create the pair if it doesn't exist yet
         address _pair = IBaseV1Factory(factory).getPair(tokenA, tokenB, stable);
         if (_pair == address(0)) {
@@ -288,7 +288,7 @@ contract BaseV1Router01 {
         uint deadline
     ) public ensure(deadline) returns (uint amountA, uint amountB) {
         address pair = pairFor(tokenA, tokenB, stable);
-        require(IBaseV1Pair(pair).transferFrom(msg.sender, pair, liquidity)); // send liquidity to pair
+        require(IBaseV1Pair(pair).transferFrom(msg.sender, pair, liquidity), '!transferFrom'); // send liquidity to pair
         (uint amount0, uint amount1) = IBaseV1Pair(pair).burn(to);
         (address token0,) = sortTokens(tokenA, tokenB);
         (amountA, amountB) = tokenA == token0 ? (amount0, amount1) : (amount1, amount0);
@@ -453,16 +453,16 @@ contract BaseV1Router01 {
     }
 
     function _safeTransfer(address token, address to, uint256 value) internal {
-        require(token.code.length > 0);
+        require(token.code.length > 0, 'token err');
         (bool success, bytes memory data) =
         token.call(abi.encodeWithSelector(erc20.transfer.selector, to, value));
-        require(success && (data.length == 0 || abi.decode(data, (bool))));
+        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FAILED');
     }
 
     function _safeTransferFrom(address token, address from, address to, uint256 value) internal {
-        require(token.code.length > 0);
+        require(token.code.length > 0, 'token err');
         (bool success, bytes memory data) =
         token.call(abi.encodeWithSelector(erc20.transferFrom.selector, from, to, value));
-        require(success && (data.length == 0 || abi.decode(data, (bool))));
+        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FROM_FAILED');
     }
 }

@@ -345,7 +345,7 @@ contract ve_dist {
 
     // Once off event on contract initialize
     function setDepositor(address _depositor) external {
-        require(msg.sender == depositor);
+        require(msg.sender == depositor, '!depositor');
         depositor = _depositor;
         emit SetDepositor(depositor);
     }

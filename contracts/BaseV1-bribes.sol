@@ -94,7 +94,7 @@ contract Bribe {
     // simple re-entrancy check
     uint internal _unlocked = 1;
     modifier lock() {
-        require(_unlocked == 1);
+        require(_unlocked == 1, 'lock');
         _unlocked = 2;
         _;
         _unlocked = 1;
@@ -249,7 +249,7 @@ contract Bribe {
 
     // allows a user to claim rewards for a given token
     function getReward(uint tokenId, address[] memory tokens) external lock  {
-        require(ve(_ve).isApprovedOrOwner(msg.sender, tokenId));
+        require(ve(_ve).isApprovedOrOwner(msg.sender, tokenId), 'not approve or owner');
         for (uint i = 0; i < tokens.length; i++) {
             (rewardPerTokenStored[tokens[i]], lastUpdateTime[tokens[i]]) = _updateRewardPerToken(tokens[i]);
 
@@ -267,7 +267,7 @@ contract Bribe {
 
     // used by BaseV1Voter to allow batched reward claims
     function getRewardForOwner(uint tokenId, address[] memory tokens) external lock  {
-        require(msg.sender == factory);
+        require(msg.sender == factory, '!factory');
         address _owner = ve(_ve).ownerOf(tokenId);
         for (uint i = 0; i < tokens.length; i++) {
             (rewardPerTokenStored[tokens[i]], lastUpdateTime[tokens[i]]) = _updateRewardPerToken(tokens[i]);
@@ -398,7 +398,7 @@ contract Bribe {
 
     // This is an external function, but internal notation is used since it can only be called "internally" from BaseV1Gauges
     function _deposit(uint amount, uint tokenId) external {
-        require(msg.sender == factory);
+        require(msg.sender == factory, '!factory');
         totalSupply += amount;
         balanceOf[tokenId] += amount;
 
@@ -409,7 +409,7 @@ contract Bribe {
     }
 
     function _withdraw(uint amount, uint tokenId) external {
-        require(msg.sender == factory);
+        require(msg.sender == factory, '!factory');
         totalSupply -= amount;
         balanceOf[tokenId] -= amount;
 
@@ -427,7 +427,7 @@ contract Bribe {
 
     // used to notify a gauge/bribe of a given reward, this can create griefing attacks by extending rewards
     function notifyRewardAmount(address token, uint amount) external lock {
-        require(amount > 0);
+        require(amount > 0, 'amount is zero');
         if (rewardRate[token] == 0) _writeRewardPerTokenCheckpoint(token, 0, block.timestamp);
         (rewardPerTokenStored[token], lastUpdateTime[token]) = _updateRewardPerToken(token);
 
@@ -437,11 +437,11 @@ contract Bribe {
         } else {
             uint _remaining = periodFinish[token] - block.timestamp;
             uint _left = _remaining * rewardRate[token];
-            require(amount > _left);
+            require(amount > _left, 'The amount of reward is too small and should be greater than the amount not yet produced');
             _safeTransferFrom(token, msg.sender, address(this), amount);
             rewardRate[token] = (amount + _left) / DURATION;
         }
-        require(rewardRate[token] > 0);
+        require(rewardRate[token] > 0, 'rewardRate is zero');
         uint balance = erc20(token).balanceOf(address(this));
         require(rewardRate[token] <= balance / DURATION, "Provided reward too high");
         periodFinish[token] = block.timestamp + DURATION;
@@ -454,17 +454,17 @@ contract Bribe {
     }
 
     function _safeTransfer(address token, address to, uint256 value) internal {
-        require(token.code.length > 0);
+        require(token.code.length > 0, 'token err');
         (bool success, bytes memory data) =
         token.call(abi.encodeWithSelector(erc20.transfer.selector, to, value));
-        require(success && (data.length == 0 || abi.decode(data, (bool))));
+        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FAILED');
     }
 
     function _safeTransferFrom(address token, address from, address to, uint256 value) internal {
-        require(token.code.length > 0);
+        require(token.code.length > 0, 'token err');
         (bool success, bytes memory data) =
         token.call(abi.encodeWithSelector(erc20.transferFrom.selector, from, to, value));
-        require(success && (data.length == 0 || abi.decode(data, (bool))));
+        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FROM_FAILED');
     }
 }
 

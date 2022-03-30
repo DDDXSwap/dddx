@@ -108,14 +108,14 @@ contract BaseV1Voter {
     // simple re-entrancy check
     uint internal _unlocked = 1;
     modifier lock() {
-        require(_unlocked == 1);
+        require(_unlocked == 1, 'lock');
         _unlocked = 2;
         _;
         _unlocked = 1;
     }
 
     function initialize(address[] memory _tokens, address _minter) external {
-        require(msg.sender == minter);
+        require(msg.sender == minter, '!minter');
         for (uint i = 0; i < _tokens.length; i++) {
             _whitelist(_tokens[i]);
         }
@@ -128,7 +128,7 @@ contract BaseV1Voter {
     }
 
     function reset(uint _tokenId) external {
-        require(ve(_ve).isApprovedOrOwner(msg.sender, _tokenId));
+        require(ve(_ve).isApprovedOrOwner(msg.sender, _tokenId), 'Not approve or owner');
         _reset(_tokenId);
         ve(_ve).abstain(_tokenId);
     }
@@ -190,8 +190,8 @@ contract BaseV1Voter {
 
             if (isGauge[_gauge]) {
                 int256 _poolWeight = _weights[i] * _weight / _totalVoteWeight;
-                require(votes[_tokenId][_pool] == 0);
-                require(_poolWeight != 0);
+                require(votes[_tokenId][_pool] == 0, 'Wrong vote');
+                require(_poolWeight != 0, '_poolWeight is zero');
                 _updateFor(_gauge);
 
                 poolVote[_tokenId].push(_pool);
@@ -214,15 +214,15 @@ contract BaseV1Voter {
     }
 
     function vote(uint tokenId, address[] calldata _poolVote, int256[] calldata _weights) external {
-        require(ve(_ve).isApprovedOrOwner(msg.sender, tokenId));
-        require(_poolVote.length == _weights.length);
+        require(ve(_ve).isApprovedOrOwner(msg.sender, tokenId), 'not approve or owner');
+        require(_poolVote.length == _weights.length, 'l error');
         _vote(tokenId, _poolVote, _weights);
     }
 
     function whitelist(address _token, uint _tokenId) external {
         if (_tokenId > 0) {
-            require(msg.sender == ve(_ve).ownerOf(_tokenId));
-            require(ve(_ve).balanceOfNFT(_tokenId) > listing_fee());
+            require(msg.sender == ve(_ve).ownerOf(_tokenId), '!owner');
+            require(ve(_ve).balanceOfNFT(_tokenId) > listing_fee(), 'nft insufficient assets');
         } else {
             _safeTransferFrom(base, msg.sender, minter, listing_fee());
         }
@@ -231,7 +231,7 @@ contract BaseV1Voter {
     }
 
     function _whitelist(address _token) internal {
-        require(!isWhitelisted[_token]);
+        require(!isWhitelisted[_token], 'whitelisted');
         isWhitelisted[_token] = true;
         emit Whitelisted(msg.sender, _token);
     }
@@ -255,24 +255,24 @@ contract BaseV1Voter {
     }
 
     function attachTokenToGauge(uint tokenId, address account) external {
-        require(isGauge[msg.sender]);
+        require(isGauge[msg.sender], '!gauge');
         if (tokenId > 0) ve(_ve).attach(tokenId);
         emit Attach(account, msg.sender, tokenId);
     }
 
     function emitDeposit(uint tokenId, address account, uint amount) external {
-        require(isGauge[msg.sender]);
+        require(isGauge[msg.sender], '!gauge');
         emit Deposit(account, msg.sender, tokenId, amount);
     }
 
     function detachTokenFromGauge(uint tokenId, address account) external {
-        require(isGauge[msg.sender]);
+        require(isGauge[msg.sender], '!gauge');
         if (tokenId > 0) ve(_ve).detach(tokenId);
         emit Detach(account, msg.sender, tokenId);
     }
 
     function emitWithdraw(uint tokenId, address account, uint amount) external {
-        require(isGauge[msg.sender]);
+        require(isGauge[msg.sender], '!gauge');
         emit Withdraw(account, msg.sender, tokenId, amount);
     }
 
@@ -337,14 +337,14 @@ contract BaseV1Voter {
     }
 
     function claimBribes(address[] memory _bribes, address[][] memory _tokens, uint _tokenId) external {
-        require(ve(_ve).isApprovedOrOwner(msg.sender, _tokenId));
+        require(ve(_ve).isApprovedOrOwner(msg.sender, _tokenId), 'Not approve or owner');
         for (uint i = 0; i < _bribes.length; i++) {
             IBribe(_bribes[i]).getRewardForOwner(_tokenId, _tokens[i]);
         }
     }
 
     function claimFees(address[] memory _fees, address[][] memory _tokens, uint _tokenId) external {
-        require(ve(_ve).isApprovedOrOwner(msg.sender, _tokenId));
+        require(ve(_ve).isApprovedOrOwner(msg.sender, _tokenId), 'Not approve or owner');
         for (uint i = 0; i < _fees.length; i++) {
             IBribe(_fees[i]).getRewardForOwner(_tokenId, _tokens[i]);
         }
@@ -388,9 +388,9 @@ contract BaseV1Voter {
     }
 
     function _safeTransferFrom(address token, address from, address to, uint256 value) internal {
-        require(token.code.length > 0);
+        require(token.code.length > 0, 'token err');
         (bool success, bytes memory data) =
         token.call(abi.encodeWithSelector(erc20.transferFrom.selector, from, to, value));
-        require(success && (data.length == 0 || abi.decode(data, (bool))));
+        require(success && (data.length == 0 || abi.decode(data, (bool))), 'TransferHelper: TRANSFER_FROM_FAILED');
     }
 }

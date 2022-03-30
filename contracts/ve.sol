@@ -398,7 +398,7 @@ contract ve is IERC721, IERC721Metadata {
     uint8 internal constant _entered = 2;
     uint8 internal _entered_state = 1;
     modifier nonreentrant() {
-        require(_entered_state == _not_entered);
+        require(_entered_state == _not_entered, 'lock');
         _entered_state = _entered;
         _;
         _entered_state = _not_entered;
@@ -598,7 +598,7 @@ contract ve is IERC721, IERC721Metadata {
     ) internal {
         require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
         // Check requirements
-        require(_isApprovedOrOwner(_sender, _tokenId));
+        require(_isApprovedOrOwner(_sender, _tokenId), 'not approve or owner');
         // Clear approval. Throws if `_from` is not the current owner
         _clearApproval(_from, _tokenId);
         // Remove NFT. Throws if `_tokenId` is not a valid NFT
@@ -704,13 +704,13 @@ contract ve is IERC721, IERC721Metadata {
     function approve(address _approved, uint _tokenId) public {
         address owner = idToOwner[_tokenId];
         // Throws if `_tokenId` is not a valid NFT
-        require(owner != address(0));
+        require(owner != address(0), 'owner is zero');
         // Throws if `_approved` is the current owner
-        require(_approved != owner);
+        require(_approved != owner, '!_approved');
         // Check requirements
         bool senderIsOwner = (idToOwner[_tokenId] == msg.sender);
         bool senderIsApprovedForAll = (ownerToOperators[owner])[msg.sender];
-        require(senderIsOwner || senderIsApprovedForAll);
+        require(senderIsOwner || senderIsApprovedForAll, 'no approved');
         // Set the approval
         idToApprovals[_tokenId] = _approved;
         emit Approval(owner, _approved, _tokenId);
@@ -927,40 +927,40 @@ contract ve is IERC721, IERC721Metadata {
     }
 
     function setVoter(address _voter) external {
-        require(msg.sender == voter);
+        require(msg.sender == voter, '!voter');
         voter = _voter;
         emit SetVoter(voter);
     }
 
     function voting(uint _tokenId) external {
-        require(msg.sender == voter);
+        require(msg.sender == voter, '!voter');
         voted[_tokenId] = true;
         emit Voting(_tokenId);
     }
 
     function abstain(uint _tokenId) external {
-        require(msg.sender == voter);
+        require(msg.sender == voter, '!voter');
         voted[_tokenId] = false;
         emit Abstain(_tokenId);
     }
 
     function attach(uint _tokenId) external {
-        require(msg.sender == voter);
+        require(msg.sender == voter, '!voter');
         attachments[_tokenId] = attachments[_tokenId]+1;
         emit Attach(_tokenId);
     }
 
     function detach(uint _tokenId) external {
-        require(msg.sender == voter);
+        require(msg.sender == voter, '!voter');
         attachments[_tokenId] = attachments[_tokenId]-1;
         emit Detach(_tokenId);
     }
 
     function merge(uint _from, uint _to) external {
         require(attachments[_from] == 0 && !voted[_from], "attached");
-        require(_from != _to);
-        require(_isApprovedOrOwner(msg.sender, _from));
-        require(_isApprovedOrOwner(msg.sender, _to));
+        require(_from != _to, 'It cant be the same');
+        require(_isApprovedOrOwner(msg.sender, _from), 'not approve or owner');
+        require(_isApprovedOrOwner(msg.sender, _to), 'not approve or owner');
 
         LockedBalance memory _locked0 = locked[_from];
         LockedBalance memory _locked1 = locked[_to];
@@ -990,7 +990,7 @@ contract ve is IERC721, IERC721Metadata {
     function deposit_for(uint _tokenId, uint _value) external nonreentrant {
         LockedBalance memory _locked = locked[_tokenId];
 
-        require(_value > 0); // dev: need non-zero value
+        require(_value > 0, 'value is zero'); // dev: need non-zero value
         require(_locked.amount > 0, 'No existing lock found');
         require(_locked.end > block.timestamp, 'Cannot add to expired lock. Withdraw');
         _deposit_for(_tokenId, _value, 0, _locked, DepositType.DEPOSIT_FOR_TYPE);
@@ -1003,7 +1003,7 @@ contract ve is IERC721, IERC721Metadata {
     function _create_lock(uint _value, uint _lock_duration, address _to) internal returns (uint) {
         uint unlock_time = (block.timestamp + _lock_duration) / WEEK * WEEK; // Locktime is rounded down to weeks
 
-        require(_value > 0); // dev: need non-zero value
+        require(_value > 0, 'value is zero'); // dev: need non-zero value
         require(unlock_time > block.timestamp, 'Can only lock until time in the future');
         require(unlock_time <= block.timestamp + MAXTIME, 'Voting lock can be 4 years max');
 
