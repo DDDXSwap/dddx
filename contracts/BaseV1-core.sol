@@ -186,8 +186,8 @@ contract BaseV1Pair {
     }
 
     function getFees(address account) external view returns (uint claimed0, uint claimed1) {
-        claimed0 = claimable0[msg.sender];
-        claimed1 = claimable1[msg.sender];
+        claimed0 = claimable0[account];
+        claimed1 = claimable1[account];
 
         uint _supplied = balanceOf[account];
         if (_supplied > 0) {
