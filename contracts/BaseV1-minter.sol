@@ -112,9 +112,6 @@ contract BaseV1Minter {
             _period = block.timestamp / week * week;
             active_period = _period;
             uint256 weeklyEmission = weekly_emission();
-            if(calculate_emission() > circulating_emission()){ // Inflation is falling by 2 per cent at a time
-                weekly = weekly * emission / target_base;
-            }
 
             uint _growth = calculate_growth(weeklyEmission);
             uint _required = _growth + weeklyEmission;
@@ -131,6 +128,10 @@ contract BaseV1Minter {
             _voter.notifyRewardAmount(weeklyEmission);
 
             emit Mint(msg.sender, weeklyEmission, circulating_supply(), circulating_emission());
+            
+            if(calculate_emission() > circulating_emission()){ // Inflation is falling by 2 per cent at a time
+                weekly = weekly * emission / target_base;
+            }
         }
         return _period;
     }
