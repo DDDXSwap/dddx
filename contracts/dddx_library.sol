@@ -6,20 +6,20 @@
 
 pragma solidity 0.8.11;
 
-interface solidly_pair {
+interface dddx_pair {
     function metadata() external view returns (uint dec0, uint dec1, uint r0, uint r1, bool st, address t0, address t1);
 }
 
-interface solidly_router {
+interface dddx_route {
     function pairFor(address tokenA, address tokenB, bool stable) external view returns (address pair);
 }
 
-contract solidly_library {
+contract dddx_library {
 
-    solidly_router internal router;
+    dddx_route internal router;
 
     constructor(address _router){
-        router = solidly_router(_router);
+        router = dddx_route(_router);
     }
 
     function _f(uint x0, uint y) internal pure returns (uint) {
@@ -55,33 +55,33 @@ contract solidly_library {
     }
 
     function getTradeDiff(uint amountIn, address tokenIn, address tokenOut, bool stable) external view returns (uint a, uint b) {
-        (uint dec0, uint dec1, uint r0, uint r1, bool st, address t0,) = solidly_pair(router.pairFor(tokenIn, tokenOut, stable)).metadata();
+        (uint dec0, uint dec1, uint r0, uint r1, bool st, address t0,) = dddx_pair(router.pairFor(tokenIn, tokenOut, stable)).metadata();
         uint sample = tokenIn == t0 ? r0*dec1/r1/10000 : r1*dec0/r0/10000;
         a = _getAmountOut(sample, tokenIn, r0, r1, t0, dec0, dec1, st) * 1e18 / sample;
         b = _getAmountOut(amountIn, tokenIn, r0, r1, t0, dec0, dec1, st) * 1e18 / amountIn;
     }
 
     function getTradeDiff(uint amountIn, address tokenIn, address pair) external view returns (uint a, uint b) {
-        (uint dec0, uint dec1, uint r0, uint r1, bool st, address t0,) = solidly_pair(pair).metadata();
+        (uint dec0, uint dec1, uint r0, uint r1, bool st, address t0,) = dddx_pair(pair).metadata();
         uint sample = tokenIn == t0 ? r0*dec1/r1/10000 : r1*dec0/r0/10000;
         a = _getAmountOut(sample, tokenIn, r0, r1, t0, dec0, dec1, st) * 1e18 / sample;
         b = _getAmountOut(amountIn, tokenIn, r0, r1, t0, dec0, dec1, st) * 1e18 / amountIn;
     }
 
     function getSample(address tokenIn, address tokenOut, bool stable) external view returns (uint) {
-        (uint dec0, uint dec1, uint r0, uint r1, bool st, address t0,) = solidly_pair(router.pairFor(tokenIn, tokenOut, stable)).metadata();
+        (uint dec0, uint dec1, uint r0, uint r1, bool st, address t0,) = dddx_pair(router.pairFor(tokenIn, tokenOut, stable)).metadata();
         uint sample = tokenIn == t0 ? r0*dec1/r1 : r1*dec0/r0;
         return _getAmountOut(sample, tokenIn, r0, r1, t0, dec0, dec1, st) * 1e18 / sample;
     }
 
     function getMinimumValue(address tokenIn, address tokenOut, bool stable) external view returns (uint, uint, uint) {
-        (uint dec0, uint dec1, uint r0, uint r1,, address t0,) = solidly_pair(router.pairFor(tokenIn, tokenOut, stable)).metadata();
+        (uint dec0, uint dec1, uint r0, uint r1,, address t0,) = dddx_pair(router.pairFor(tokenIn, tokenOut, stable)).metadata();
         uint sample = tokenIn == t0 ? r0*dec1/r1 : r1*dec0/r0;
         return (sample, r0, r1);
     }
 
     function getAmountOut(uint amountIn, address tokenIn, address tokenOut, bool stable) external view returns (uint) {
-        (uint dec0, uint dec1, uint r0, uint r1, bool st, address t0,) = solidly_pair(router.pairFor(tokenIn, tokenOut, stable)).metadata();
+        (uint dec0, uint dec1, uint r0, uint r1, bool st, address t0,) = dddx_pair(router.pairFor(tokenIn, tokenOut, stable)).metadata();
         return _getAmountOut(amountIn, tokenIn, r0, r1, t0, dec0, dec1, st) * 1e18 / amountIn;
     }
 
