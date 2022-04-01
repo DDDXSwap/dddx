@@ -78,7 +78,8 @@ contract BaseV1Minter {
             _ve.create_lock_for(amounts[i], lock, claimants[i]);
         }
         initializer = address(0);
-        active_period = (block.timestamp + week) / week * week;
+//        active_period = (block.timestamp + week) / week * week;
+        active_period = 1648684800;  // 2022.3.31
 
         emit Initialize(initializer, active_period);
     }
