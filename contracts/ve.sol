@@ -859,22 +859,9 @@ contract ve is IERC721, IERC721Metadata {
             // Schedule the slope changes (slope is going down)
             // We subtract new_user_slope from [new_locked.end]
             // and add old_user_slope to [old_locked.end]
-            if (old_locked.end > block.timestamp) {
-                // old_dslope was <something> - u_old.slope, so we cancel that
-                old_dslope += u_old.slope;
-                if (new_locked.end == old_locked.end) {
-                    old_dslope -= u_new.slope; // It was a new deposit, not extension
-                }
-                slope_changes[old_locked.end] = old_dslope;
-            }
+            if(old_locked.end > block.timestamp) slope_changes[old_locked.end] += u_old.slope;
+            if(new_locked.end > block.timestamp) slope_changes[new_locked.end] -= u_new.slope;
 
-            if (new_locked.end > block.timestamp) {
-                if (new_locked.end > old_locked.end) {
-                    new_dslope -= u_new.slope; // old slope disappeared at this point
-                    slope_changes[new_locked.end] = new_dslope;
-                }
-                // else: we recorded it already in old_dslope
-            }
             // Now handle user history
             uint user_epoch = user_point_epoch[_tokenId] + 1;
 
